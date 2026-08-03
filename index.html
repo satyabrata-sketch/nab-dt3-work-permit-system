@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAB-DT3 Work Permit System - Data Entry & Realtime Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (XLSX Export Library) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- TOP NAVBAR -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>NAB-DT3 Work Permit Tracker</h1>
+                    <p class="brand-subtitle">CBRE Facility & Safety Operations Portal</p>
+                </div>
+            </div>
+
+            <!-- SLIDE NAVIGATION TABS -->
+            <div class="slide-tabs">
+                <button class="slide-tab-btn active" id="tabSlide1" data-slide="slide1">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>SLIDE 1: Data Entry & Tracker</span>
+                </button>
+                <button class="slide-tab-btn" id="tabSlide2" data-slide="slide2">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>SLIDE 2: Realtime Dashboard</span>
+                    <span class="badge-live">LIVE</span>
+                </button>
+            </div>
+
+            <div class="header-right-tools">
+                <button class="btn btn-emerald btn-sm shadow-glow-emerald" id="btnHeaderExportExcel">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel (.xlsx)
+                </button>
+                <div class="status-pill active-pill">
+                    <span class="pulse-dot"></span>
+                    <span>NAB-DT3 OPERATIONAL</span>
+                </div>
+                <div class="live-clock" id="liveClock">
+                    <i class="fa-regular fa-clock"></i>
+                    <span id="clockText">--:--:--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- NOTIFICATION TOAST -->
+        <div class="toast-notification" id="toastNotification">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="toastMessage">Permit updated successfully! Realtime dashboard refreshed.</span>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="slides-container">
+            
+            <!-- =================================================================== -->
+            <!-- SLIDE 1: DATA ENTRY & PERMIT MANAGEMENT TRACKER -->
+            <!-- =================================================================== -->
+            <section class="slide-view active" id="slide1View">
+                
+                <!-- DATA ENTRY PANEL CARD -->
+                <div class="section-card entry-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fa-solid fa-file-circle-plus"></i>
+                            <div>
+                                <h2>Work Permit Data Entry & Update Form</h2>
+                                <p>Add new work permits or update existing entries into the NAB-DT3 site tracker (Updates Dashboard Realtime)</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-ghost" id="btnToggleEntryForm">
+                            <i class="fa-solid fa-chevron-up" id="toggleFormIcon"></i> Hide Form
+                        </button>
+                    </div>
+
+                    <form id="entryForm" class="entry-form-body">
+                        <input type="hidden" id="entryPermitId" value="">
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="entryPermitNo"><i class="fa-solid fa-hashtag"></i> Permit Number *</label>
+                                <input type="text" id="entryPermitNo" required placeholder="e.g. 210 or WP-2026-15">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryDate"><i class="fa-regular fa-calendar"></i> Permit Date *</label>
+                                <input type="date" id="entryDate" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryType"><i class="fa-solid fa-tags"></i> Category / Work Type *</label>
+                                <select id="entryType" required>
+                                    <option value="General" selected>General</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="HOT">HOT (Welding / Grinding / Spark Risk)</option>
+                                    <option value="Height">Height (Roof / Ceiling / Scaffold)</option>
+                                    <option value="Confined Space">Confined Space (Ducts / Tanks / Pits)</option>
+                                </select>
+                            </div>
+
+                            <!-- FREE TEXT BOX FOR SITE LOCATION -->
+                            <div class="form-group">
+                                <label for="entryLocation"><i class="fa-solid fa-location-dot"></i> Site Location (Free Text) *</label>
+                                <input type="text" id="entryLocation" required placeholder="e.g. Zone B - Cafeteria, 4th Floor Server Room, Roof Deck">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryCompany"><i class="fa-solid fa-building"></i> Company / Agency *</label>
+                                <input type="text" id="entryCompany" required placeholder="e.g. WAE, JCI, Vertiv, Meiko">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryVendor"><i class="fa-solid fa-user-gear"></i> Vendor Technician Name *</label>
+                                <input type="text" id="entryVendor" required placeholder="e.g. Nitesh Kumar">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryContact"><i class="fa-solid fa-phone"></i> Contact Number</label>
+                                <input type="text" id="entryContact" placeholder="e.g. 9876543210">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryStatus"><i class="fa-solid fa-list-check"></i> Permit Status *</label>
+                                <select id="entryStatus" required>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Active">Active (In Progress)</option>
+                                    <option value="Pending Approval">Pending Approval</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 12px;">
+                            <label for="entryDescription"><i class="fa-solid fa-align-left"></i> Work Description & Scope *</label>
+                            <textarea id="entryDescription" rows="2" required placeholder="Detail specific PPM, repairs, equipment used, or safety requirements..."></textarea>
+                        </div>
+
+                        <div class="entry-form-actions">
+                            <button type="button" class="btn btn-ghost" id="btnClearForm"><i class="fa-solid fa-eraser"></i> Clear Form</button>
+                            <button type="submit" class="btn btn-primary" id="btnSubmitEntry">
+                                <i class="fa-solid fa-plus-circle"></i> Save & Update Tracker
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PERMIT TRACKER DATA TABLE SECTION -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fa-solid fa-table"></i>
+                            <div>
+                                <h2>NAB-DT3 Permit Records Tracker</h2>
+                                <p>Search, filter, view details, edit, or delete stored permits (All 424 Excel records loaded)</p>
+                            </div>
+                        </div>
+
+                        <div class="header-actions">
+                            <button class="btn btn-emerald shadow-glow-emerald" id="btnExportExcelSlide1">
+                                <i class="fa-solid fa-file-excel"></i> Export Formatted Excel (.xlsx)
+                            </button>
+                            <button class="btn btn-secondary" id="btnExportCSV"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            <button class="btn btn-ghost" id="btnResetTrackerFilters"><i class="fa-solid fa-rotate-right"></i> Reset Filters</button>
+                        </div>
+                    </div>
+
+                    <!-- SEARCH & FILTER TOOLBAR -->
+                    <div class="explorer-toolbar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="searchInput" placeholder="Search Permit #, Company, Vendor, Location, Description..." autocomplete="off">
+                            <button class="clear-search" id="btnClearSearch" style="display: none;">&times;</button>
+                        </div>
+
+                        <div class="filter-dropdowns">
+                            <div class="filter-group">
+                                <label><i class="fa-solid fa-tags"></i> Category</label>
+                                <select id="filterCategorySelect">
+                                    <option value="All">All 5 Categories</option>
+                                    <option value="General">General</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="HOT">HOT Work</option>
+                                    <option value="Height">Height Work</option>
+                                    <option value="Confined Space">Confined Space</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fa-solid fa-location-dot"></i> Location Filter</label>
+                                <select id="filterLocationSelect">
+                                    <option value="All">All Site Locations</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fa-solid fa-building-user"></i> Company</label>
+                                <select id="filterCompanySelect">
+                                    <option value="All">All Companies</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fa-regular fa-calendar-days"></i> Period / Month</label>
+                                <select id="filterSheetSelect">
+                                    <option value="All">All Periods (Jan 25 - Jul 26)</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fa-solid fa-list-check"></i> Status</label>
+                                <select id="filterStatusSelect">
+                                    <option value="All">All Statuses</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Pending Approval">Pending Approval</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="view-switcher-bar">
+                            <span class="matching-count" id="matchingRecordsCount">Showing 0 of 0 permits</span>
+                            <div class="btn-group-toggle">
+                                <button class="toggle-btn active" id="viewBtnTable" title="Table View"><i class="fa-solid fa-table-list"></i> Table</button>
+                                <button class="toggle-btn" id="viewBtnGrid" title="Card Grid View"><i class="fa-solid fa-border-all"></i> Cards</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PERMITS TABLE VIEW -->
+                    <div class="table-responsive-container" id="tableViewContainer">
+                        <table class="permits-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="permit_no">Permit No <i class="fa-solid fa-sort"></i></th>
+                                    <th data-sort="date">Date <i class="fa-solid fa-sort"></i></th>
+                                    <th data-sort="type">Category <i class="fa-solid fa-sort"></i></th>
+                                    <th data-sort="location">Location / Zone <i class="fa-solid fa-sort"></i></th>
+                                    <th data-sort="company">Company / Vendor <i class="fa-solid fa-sort"></i></th>
+                                    <th>Contact Details</th>
+                                    <th>Work Description</th>
+                                    <th data-sort="status">Status <i class="fa-solid fa-sort"></i></th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="permitsTableBody">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- PERMITS CARDS GRID VIEW -->
+                    <div class="cards-grid-container" id="cardsViewContainer" style="display: none;">
+                        <div class="cards-grid" id="permitsCardsGrid">
+                            <!-- Dynamic Cards -->
+                        </div>
+                    </div>
+
+                    <!-- PAGINATION -->
+                    <div class="pagination-footer">
+                        <div class="items-per-page">
+                            <label for="itemsPerPageSelect">Display:</label>
+                            <select id="itemsPerPageSelect" class="input-select-sm">
+                                <option value="10">10 / page</option>
+                                <option value="25" selected>25 / page</option>
+                                <option value="50">50 / page</option>
+                                <option value="100">100 / page</option>
+                                <option value="all">All Records</option>
+                            </select>
+                        </div>
+                        <div class="pagination-buttons" id="paginationButtons">
+                            <!-- Page buttons -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================== -->
+            <!-- SLIDE 2: EXECUTIVE REALTIME DASHBOARD -->
+            <!-- =================================================================== -->
+            <section class="slide-view" id="slide2View">
+                
+                <!-- DASHBOARD HEADER BAR WITH EXPORT EXCEL BUTTON -->
+                <div class="dashboard-top-bar">
+                    <div class="dashboard-title-group">
+                        <h2><i class="fa-solid fa-gauge-high"></i> Executive Realtime Dashboard</h2>
+                        <p>Real-time analytics, category threshold metrics, and site volume indicators</p>
+                    </div>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-emerald shadow-glow-emerald" id="btnExportExcelDashboard">
+                            <i class="fa-solid fa-file-excel"></i> Export Dashboard Report (.xlsx)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- REALTIME KPI METRIC CARDS FOR 5 CATEGORIES -->
+                <div class="stats-grid">
+                    <div class="stat-card" id="statCardTotal">
+                        <div class="stat-icon icon-cyan"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Work Permits</span>
+                            <h2 class="stat-value" id="statTotalPermits">0</h2>
+                            <span class="stat-desc">From Excel Historical Data</span>
+                        </div>
+                        <div class="stat-bar"><div class="bar-fill cyan-fill" style="width: 100%;"></div></div>
+                    </div>
+
+                    <div class="stat-card" id="statCardGeneral">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-wrench"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">General Work</span>
+                            <h2 class="stat-value" id="statGeneralPermits">0</h2>
+                            <span class="stat-desc" id="statGeneralPct">0% of Total</span>
+                        </div>
+                        <div class="stat-bar"><div class="bar-fill blue-fill" id="barGeneral" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="stat-card" id="statCardElectrical">
+                        <div class="stat-icon icon-amber"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Electrical Work</span>
+                            <h2 class="stat-value" id="statElectricalPermits">0</h2>
+                            <span class="stat-desc" id="statElectricalPct">0% of Total</span>
+                        </div>
+                        <div class="stat-bar"><div class="bar-fill amber-fill" id="barElectrical" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="stat-card" id="statCardHot">
+                        <div class="stat-icon icon-rose"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">HOT Work (Welding/Grinding)</span>
+                            <h2 class="stat-value" id="statHotPermits">0</h2>
+                            <span class="stat-desc" id="statHotPct">0% of Total</span>
+                        </div>
+                        <div class="stat-bar"><div class="bar-fill rose-fill" id="barHot" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="stat-card" id="statCardHeight">
+                        <div class="stat-icon icon-purple"><i class="fa-solid fa-person-falling-burst"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Height Work</span>
+                            <h2 class="stat-value" id="statHeightPermits">0</h2>
+                            <span class="stat-desc" id="statHeightPct">0% of Total</span>
+                        </div>
+                        <div class="stat-bar"><div class="bar-fill purple-fill" id="barHeight" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="stat-card" id="statCardConfined">
+                        <div class="stat-icon icon-emerald"><i class="fa-solid fa-boxes-packing"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Confined Space</span>
+                            <h2 class="stat-value" id="statConfinedPermits">0</h2>
+                            <span class="stat-desc" id="statConfinedPct">0% of Total</span>
+                        </div>
+                        <div class="stat-bar"><div class="bar-fill emerald-fill" id="barConfined" style="width: 0%;"></div></div>
+                    </div>
+                </div>
+
+                <!-- CATEGORY & MINIMUM CATEGORY MONITOR -->
+                <div class="section-card category-monitor-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fa-solid fa-sliders"></i>
+                            <div>
+                                <h2>Category-Wise & Minimum Category Threshold Monitor</h2>
+                                <p>Realtime safety compliance, volume thresholds, and top contractors across all 5 Work Permit Categories</p>
+                            </div>
+                        </div>
+
+                        <div class="threshold-controls">
+                            <div class="threshold-input-group">
+                                <label for="minCategoryThreshold"><i class="fa-solid fa-gauge"></i> Minimum Category Permits:</label>
+                                <input type="number" id="minCategoryThreshold" min="1" max="300" value="5" class="input-number">
+                                <input type="range" id="minCategoryRange" min="1" max="250" value="5" class="input-range">
+                                <span class="threshold-badge" id="thresholdBadge">Min >= 5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-pills-row" id="categoryPillsContainer">
+                        <button class="pill-btn active" data-category="All"><i class="fa-solid fa-layer-group"></i> All Categories (<span id="pillCountAll">0</span>)</button>
+                        <button class="pill-btn" data-category="General"><i class="fa-solid fa-wrench"></i> General (<span id="pillCountGeneral">0</span>)</button>
+                        <button class="pill-btn" data-category="Electrical"><i class="fa-solid fa-bolt"></i> Electrical (<span id="pillCountElectrical">0</span>)</button>
+                        <button class="pill-btn" data-category="HOT"><i class="fa-solid fa-fire-flame-curved"></i> HOT Work (<span id="pillCountHot">0</span>)</button>
+                        <button class="pill-btn" data-category="Height"><i class="fa-solid fa-person-falling-burst"></i> Height (<span id="pillCountHeight">0</span>)</button>
+                        <button class="pill-btn" data-category="Confined Space"><i class="fa-solid fa-boxes-packing"></i> Confined Space (<span id="pillCountConfined">0</span>)</button>
+                    </div>
+
+                    <div class="category-matrix-grid" id="categoryMatrixGrid">
+                        <!-- Dynamic Matrix Cards for 5 Categories -->
+                    </div>
+                </div>
+
+                <!-- REALTIME CHARTS ROW -->
+                <div class="charts-row">
+                    <!-- Chart 1: 5 Categories Share -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3><i class="fa-solid fa-chart-pie"></i> 5 Work Categories Breakdown</h3>
+                            <span class="chart-tag">Realtime %</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Monthly Trend -->
+                    <div class="chart-card chart-card-wide">
+                        <div class="chart-card-header">
+                            <h3><i class="fa-solid fa-chart-line"></i> Monthly Permit Volume Trend (Jan 2025 - July 2026)</h3>
+                            <span class="chart-tag">13 Months History</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="monthlyTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Site Zone Density -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3><i class="fa-solid fa-building"></i> NAB-DT3 Site Location Density</h3>
+                            <span class="chart-tag">Free Text Locations</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="zoneChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 4: Top Contractors -->
+                    <div class="chart-card chart-card-wide">
+                        <div class="chart-card-header">
+                            <h3><i class="fa-solid fa-truck-field"></i> Top Contractor & Vendor Workload</h3>
+                            <span class="chart-tag">Top 10 Companies</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="vendorChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <p>NAB-DT3 Work Permit System | Slide 1 Data Tracker & Slide 2 Realtime Executive Dashboard &copy; 2026 CBRE Facility Management</p>
+        </footer>
+    </div>
+
+    <!-- MODAL: EXPORT REPORT HUB OPTION MODAL -->
+    <div class="modal-overlay" id="exportModalOverlay">
+        <div class="modal-card export-modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-excel text-emerald"></i> Export Formatted Excel Report Hub</h3>
+                <button class="modal-close" id="btnCloseExportModal">&times;</button>
+            </div>
+            
+            <div class="export-modal-body">
+                <div class="export-banner">
+                    <div class="banner-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                    <div class="banner-text">
+                        <h4>NAB-DT3 Work Permit Master Report (.xlsx)</h4>
+                        <p>Generates a formatted multi-sheet Excel workbook with clean columns, auto-width formatting, 5-category threshold metrics, and executive summaries.</p>
+                    </div>
+                </div>
+
+                <div class="export-options-grid">
+                    <div class="export-opt-box">
+                        <label class="opt-title"><i class="fa-solid fa-filter"></i> Export Dataset Scope:</label>
+                        <div class="opt-radio-group">
+                            <label><input type="radio" name="exportScope" value="filtered" checked> Currently Filtered View (<span id="exportFilteredCount">0</span> permits)</label>
+                            <label><input type="radio" name="exportScope" value="all"> All Stored Master Permits (<span id="exportAllCount">0</span> permits)</label>
+                        </div>
+                    </div>
+
+                    <div class="export-opt-box">
+                        <label class="opt-title"><i class="fa-solid fa-layer-group"></i> Worksheets to Include:</label>
+                        <div class="opt-check-group">
+                            <label><input type="checkbox" id="chkSheetMaster" checked disabled> Sheet 1: Master Permits List (Formatted Data)</label>
+                            <label><input type="checkbox" id="chkSheetCategory" checked> Sheet 2: 5 Categories Threshold Monitor & Compliance</label>
+                            <label><input type="checkbox" id="chkSheetKPI" checked> Sheet 3: Executive KPI Metrics Breakdown</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="btnCancelExport">Cancel</button>
+                <button class="btn btn-emerald shadow-glow-emerald" id="btnConfirmExportExcel">
+                    <i class="fa-solid fa-download"></i> Download Formatted Excel (.xlsx)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DIGITAL WORK PERMIT PASS TICKET -->
+    <div class="modal-overlay" id="detailModalOverlay">
+        <div class="modal-card detail-modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-id-card"></i> Official Work Permit Ticket - NAB-DT3</h3>
+                <button class="modal-close" id="btnCloseDetailModal">&times;</button>
+            </div>
+            
+            <div class="permit-pass-card" id="printablePermitPass">
+                <div class="pass-header">
+                    <div class="pass-title">
+                        <span class="pass-badge" id="detailCategoryBadge">General</span>
+                        <h2 id="detailPermitNo">Permit #---</h2>
+                        <p id="detailSite">NAB-DT3 Site | Date: <span id="detailDate">---</span></p>
+                    </div>
+                    <div class="pass-qr">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>VERIFIED PASS</span>
+                    </div>
+                </div>
+
+                <div class="pass-grid">
+                    <div class="pass-item">
+                        <span class="pass-label">Location / Site Zone:</span>
+                        <span class="pass-val" id="detailLocation">---</span>
+                    </div>
+                    <div class="pass-item">
+                        <span class="pass-label">Contractor / Company:</span>
+                        <span class="pass-val" id="detailCompany">---</span>
+                    </div>
+                    <div class="pass-item">
+                        <span class="pass-label">Technician / Vendor:</span>
+                        <span class="pass-val" id="detailVendor">---</span>
+                    </div>
+                    <div class="pass-item">
+                        <span class="pass-label">Contact Number:</span>
+                        <span class="pass-val" id="detailContact">---</span>
+                    </div>
+                    <div class="pass-item">
+                        <span class="pass-label">Log Sheet Period:</span>
+                        <span class="pass-val" id="detailSheet">---</span>
+                    </div>
+                    <div class="pass-item">
+                        <span class="pass-label">Permit Status:</span>
+                        <span class="pass-val" id="detailStatus">---</span>
+                    </div>
+                </div>
+
+                <div class="pass-desc-box">
+                    <span class="pass-label">Work Description & Scope:</span>
+                    <p id="detailDescription">---</p>
+                </div>
+
+                <div class="pass-checklist">
+                    <span class="pass-label">Safety Compliance Checklist:</span>
+                    <ul>
+                        <li><i class="fa-solid fa-check-double text-emerald"></i> PPE & Safety Equipment Inspected</li>
+                        <li><i class="fa-solid fa-check-double text-emerald"></i> Isolations & Risk Assessment Cleared</li>
+                        <li><i class="fa-solid fa-check-double text-emerald"></i> Facility Operations Authorization Verified</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Ticket</button>
+                <button class="btn btn-primary" id="btnEditFromDetail"><i class="fa-solid fa-pen-to-square"></i> Edit Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
