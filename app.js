@@ -1,5 +1,5 @@
 /* ==========================================================================
-   NAB-DT3 WORK PERMIT SYSTEM - LOGIC (TOTAL BLUE THEME & SEQUENTIAL SR NO)
+   NAB-DT3 WORK PERMIT SYSTEM - LOGIC (LATEST TO OLDER CHRONOLOGICAL ORDER)
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // STATE MANAGEMENT
     // ----------------------------------------------------
     let permits = [];
-    const LOCAL_STORAGE_KEY = 'NAB_DT3_PERMITS_DATA_V3';
+    const LOCAL_STORAGE_KEY = 'NAB_DT3_PERMITS_DATA_V4';
 
     const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedData) {
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         permits = [...PERMIT_DATA];
     }
 
-    // Ensure all permits have Long Date Format
+    // Format long dates
     permits.forEach(p => {
         p.date = formatLongDate(p.date);
     });
@@ -41,8 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let itemsPerPage = 25;
     let currentView = 'table';
     
-    let sortColumn = 'id';
-    let sortAscending = false;
+    // DEFAULT SORTING: LATEST DATE TO OLDER DATE
+    let sortColumn = 'date';
+    let sortAscending = false; // false = Descending (Latest to Older)
 
     let chartInstances = {};
 
@@ -83,6 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         return dateStr;
+    }
+
+    // PARSE DATE TO TIMESTAMP FOR ACCURATE CHRONOLOGICAL SORTING
+    function parseDateToTimestamp(dateStr) {
+        if (!dateStr || dateStr === 'N/A') return 0;
+        const parsed = new Date(dateStr);
+        if (!isNaN(parsed.getTime())) return parsed.getTime();
+        return 0;
     }
 
     // ----------------------------------------------------
@@ -177,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // FILTERING LOGIC
+    // FILTERING & CHRONOLOGICAL SORTING LOGIC
     // ----------------------------------------------------
     function applyFilters() {
         filteredPermits = permits.filter(p => {
@@ -235,6 +244,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function sortPermits() {
         filteredPermits.sort((a, b) => {
+            if (sortColumn === 'date') {
+                const timeA = parseDateToTimestamp(a.date);
+                const timeB = parseDateToTimestamp(b.date);
+                
+                if (timeA !== timeB) {
+                    return sortAscending ? (timeA - timeB) : (timeB - timeA);
+                }
+                const idA = parseInt(a.id) || 0;
+                const idB = parseInt(b.id) || 0;
+                return sortAscending ? (idA - idB) : (idB - idA);
+            }
+
             let valA = a[sortColumn] || '';
             let valB = b[sortColumn] || '';
 
@@ -387,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // RENDER SLIDE 1 PERMITS TRACKER (SEQUENTIAL SR NO: 1, 2, 3...)
+    // RENDER SLIDE 1 PERMITS TRACKER (LATEST TO OLDER ORDER)
     // ----------------------------------------------------
     function renderPermits() {
         const tbody = document.getElementById('permitsTableBody');
@@ -528,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // CHARTS (BLUE THEME VISUALIZATIONS)
+    // CHARTS
     // ----------------------------------------------------
     function initCharts() {
         const ctxCat = document.getElementById('categoryChart').getContext('2d');
@@ -853,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wb = XLSX.utils.book_new();
 
         const formattedPermits = dataset.map((p, idx) => ({
-            'Sr No': idx + 1, // Sequential 1, 2, 3, 4...
+            'Sr No': idx + 1,
             'Permit Number': p.permit_no,
             'Date (Long Format)': formatLongDate(p.date),
             'Category': p.type,
@@ -1073,6 +1094,10 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedSheet = 'All';
             selectedStatus = 'All';
             searchQuery = '';
+
+            // Reset sort to Latest to Older Date
+            sortColumn = 'date';
+            sortAscending = false;
 
             document.getElementById('filterCategorySelect').value = 'All';
             document.getElementById('filterLocationSelect').value = 'All';
