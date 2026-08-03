@@ -1,5 +1,5 @@
 /* ==========================================================================
-   NAB-DT3 WORK PERMIT SYSTEM - LOGIC (5 CATEGORIES & FREE TEXT LOCATION)
+   NAB-DT3 WORK PERMIT SYSTEM - LOGIC (BLUE & GREEN THEME, LONG DATE FORMAT)
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,11 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
         permits = [...PERMIT_DATA];
     }
 
+    // Ensure all permits have Long Date Format
+    permits.forEach(p => {
+        p.date = formatLongDate(p.date);
+    });
+
     let filteredPermits = [...permits];
     
     let activeSlide = 'slide1';
     
-    let currentCategory = 'All'; // 'All', 'General', 'Electrical', 'HOT', 'Height', 'Confined Space'
+    let currentCategory = 'All';
     let minCategoryThreshold = 5;
     let selectedLocation = 'All';
     let selectedCompany = 'All';
@@ -63,6 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(permits));
     }
 
+    // LONG DATE FORMAT HELPER (e.g. July 08, 2026)
+    function formatLongDate(dateStr) {
+        if (!dateStr || dateStr === 'N/A') return 'N/A';
+        if (dateStr.includes(',') && dateStr.length > 8) return dateStr; // Already long format
+        
+        const clean = dateStr.split(' ')[0];
+        const parsed = new Date(clean);
+        if (!isNaN(parsed.getTime())) {
+            return parsed.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: '2-digit'
+            });
+        }
+        return dateStr;
+    }
+
     // ----------------------------------------------------
     // LIVE CLOCK & TOAST NOTIFICATION
     // ----------------------------------------------------
@@ -70,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const clockEl = document.getElementById('clockText');
         function updateClock() {
             const now = new Date();
-            clockEl.textContent = now.toLocaleTimeString() + ' | ' + now.toLocaleDateString();
+            clockEl.textContent = now.toLocaleTimeString() + ' | ' + now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
         }
         updateClock();
         setInterval(updateClock, 1000);
@@ -117,10 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // POPULATE DROPDOWNS (DYNAMIC LOCATIONS & COMPANIES)
+    // POPULATE DROPDOWNS
     // ----------------------------------------------------
     function populateFilterDropdowns() {
-        // Dynamic Locations from Free Text Inputs
         const locationSelect = document.getElementById('filterLocationSelect');
         const locations = Array.from(new Set(permits.map(p => p.location).filter(Boolean))).sort();
         
@@ -132,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
             locationSelect.appendChild(opt);
         });
 
-        // Companies
         const companySelect = document.getElementById('filterCompanySelect');
         const companies = Array.from(new Set(permits.map(p => p.company).filter(Boolean))).sort();
         
@@ -144,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
             companySelect.appendChild(opt);
         });
 
-        // Sheets / Periods
         const sheetSelect = document.getElementById('filterSheetSelect');
         const sheets = Array.from(new Set(permits.map(p => p.sheet).filter(Boolean)));
         
@@ -162,38 +181,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------
     function applyFilters() {
         filteredPermits = permits.filter(p => {
-            // Category Pill Filter
             if (currentCategory !== 'All') {
                 if (p.type !== currentCategory) return false;
             }
 
-            // Category Select Dropdown
             const filterCatVal = document.getElementById('filterCategorySelect').value;
             if (filterCatVal !== 'All' && p.type !== filterCatVal) {
                 return false;
             }
 
-            // Location Filter
             if (selectedLocation !== 'All' && p.location !== selectedLocation) {
                 return false;
             }
 
-            // Company Filter
             if (selectedCompany !== 'All' && p.company !== selectedCompany) {
                 return false;
             }
 
-            // Period Filter
             if (selectedSheet !== 'All' && p.sheet !== selectedSheet) {
                 return false;
             }
 
-            // Status Filter
             if (selectedStatus !== 'All' && p.status !== selectedStatus) {
                 return false;
             }
 
-            // Search Query
             if (searchQuery.trim() !== '') {
                 const q = searchQuery.toLowerCase();
                 const matchPermit = (p.permit_no || '').toLowerCase().includes(q);
@@ -202,9 +214,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const matchVendor = (p.vendor || '').toLowerCase().includes(q);
                 const matchContact = (p.contact || '').toLowerCase().includes(q);
                 const matchLoc = (p.location || '').toLowerCase().includes(q);
-                const matchCat = (p.type || '').toLowerCase().includes(q);
+                const matchDate = (p.date || '').toLowerCase().includes(q);
 
-                if (!matchPermit && !matchDesc && !matchComp && !matchVendor && !matchContact && !matchLoc && !matchCat) {
+                if (!matchPermit && !matchDesc && !matchComp && !matchVendor && !matchContact && !matchLoc && !matchDate) {
                     return false;
                 }
             }
@@ -265,7 +277,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('barHeight').style.width = (total ? (height / total) * 100 : 0) + '%';
         document.getElementById('barConfined').style.width = (total ? (confined / total) * 100 : 0) + '%';
 
-        // Update Pill Counts
         document.getElementById('pillCountAll').textContent = permits.length;
         document.getElementById('pillCountGeneral').textContent = permits.filter(p => p.type === 'General').length;
         document.getElementById('pillCountElectrical').textContent = permits.filter(p => p.type === 'Electrical').length;
@@ -376,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // RENDER SLIDE 1 PERMITS TRACKER
+    // RENDER SLIDE 1 PERMITS TRACKER (LONG DATE FORMAT)
     // ----------------------------------------------------
     function renderPermits() {
         const tbody = document.getElementById('permitsTableBody');
@@ -422,9 +433,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (p.status === 'Active') statusClass = 'status-active';
             if (p.status === 'Pending Approval') statusClass = 'status-pending';
 
+            const longDateStr = formatLongDate(p.date);
+
             tr.innerHTML = `
                 <td><strong>#${p.permit_no}</strong></td>
-                <td>${p.date || 'N/A'}</td>
+                <td><i class="fa-regular fa-calendar-check" style="color: var(--primary);"></i> ${longDateStr}</td>
                 <td><span class="type-badge ${badgeClass}">${p.type}</span></td>
                 <td><i class="fa-solid fa-location-dot" style="color: var(--text-dim);"></i> ${escapeHtml(p.location)}</td>
                 <td><strong>${escapeHtml(p.company)}</strong> <br><small style="color: var(--text-dim);">${escapeHtml(p.vendor)}</small></td>
@@ -456,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="permit-card-meta">
                         <span><i class="fa-solid fa-building"></i> <strong>Company:</strong> ${escapeHtml(p.company)} (${escapeHtml(p.vendor)})</span>
                         <span><i class="fa-solid fa-location-dot"></i> <strong>Location:</strong> ${escapeHtml(p.location)}</span>
-                        <span><i class="fa-regular fa-calendar"></i> <strong>Date:</strong> ${p.date || 'N/A'}</span>
+                        <span><i class="fa-regular fa-calendar"></i> <strong>Date:</strong> ${longDateStr}</span>
                     </div>
                 </div>
                 <div class="modal-footer" style="padding: 10px 0 0 0; background: transparent; border-top: 1px solid var(--border-glass);">
@@ -510,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // CHARTS FOR 5 CATEGORIES
+    // CHARTS (BLUE & GREEN THEME VISUALIZATIONS)
     // ----------------------------------------------------
     function initCharts() {
         const ctxCat = document.getElementById('categoryChart').getContext('2d');
@@ -522,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     data: [0, 0, 0, 0, 0],
                     backgroundColor: ['#3B82F6', '#F59E0B', '#F43F5E', '#8B5CF6', '#10B981'],
                     borderWidth: 2,
-                    borderColor: '#0F172A'
+                    borderColor: '#0B132B'
                 }]
             },
             options: {
@@ -542,8 +555,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     label: 'Permits Issued',
                     data: [],
-                    backgroundColor: 'rgba(6, 182, 212, 0.75)',
-                    borderColor: '#06B6D4',
+                    backgroundColor: 'rgba(59, 130, 246, 0.75)',
+                    borderColor: '#3B82F6',
                     borderWidth: 1,
                     borderRadius: 6
                 }]
@@ -594,8 +607,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     label: 'Permits Worked',
                     data: [],
-                    backgroundColor: 'rgba(139, 92, 246, 0.75)',
-                    borderColor: '#8B5CF6',
+                    backgroundColor: 'rgba(6, 182, 212, 0.75)',
+                    borderColor: '#06B6D4',
                     borderWidth: 1,
                     borderRadius: 6
                 }]
@@ -687,9 +700,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const id = document.getElementById('entryPermitId').value;
             const permit_no = document.getElementById('entryPermitNo').value.trim();
-            const date = document.getElementById('entryDate').value;
+            const rawDate = document.getElementById('entryDate').value;
+            const date = formatLongDate(rawDate); // Long Date Format
             const type = document.getElementById('entryType').value;
-            const location = document.getElementById('entryLocation').value.trim(); // Free text location
+            const location = document.getElementById('entryLocation').value.trim();
             const company = document.getElementById('entryCompany').value.trim();
             const vendor = document.getElementById('entryVendor').value.trim();
             const contact = document.getElementById('entryContact').value.trim();
@@ -703,7 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ...permits[idx],
                         permit_no, date, type, location, company, vendor, contact, status, description
                     };
-                    showToast(`Permit #${permit_no} updated! Slide 2 Dashboard refreshed in realtime.`);
+                    showToast(`Permit #${permit_no} updated! Realtime Dashboard refreshed.`);
                 }
             } else {
                 const newId = permits.length ? Math.max(...permits.map(p => p.id)) + 1 : 1;
@@ -721,7 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     status,
                     description
                 });
-                showToast(`Permit #${permit_no} added! Realtime Slide 2 Dashboard updated.`);
+                showToast(`Permit #${permit_no} added! Realtime Dashboard updated.`);
             }
 
             saveStateToLocalStorage();
@@ -748,9 +762,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('entryPermitId').value = p.id;
         document.getElementById('entryPermitNo').value = p.permit_no;
-        document.getElementById('entryDate').value = p.date ? p.date.split(' ')[0] : '';
+        
+        // Parse date for HTML date input
+        try {
+            const parsed = new Date(p.date);
+            if (!isNaN(parsed.getTime())) {
+                document.getElementById('entryDate').value = parsed.toISOString().split('T')[0];
+            }
+        } catch(e) {}
+
         document.getElementById('entryType').value = p.type;
-        document.getElementById('entryLocation').value = p.location; // Free text input
+        document.getElementById('entryLocation').value = p.location;
         document.getElementById('entryCompany').value = p.company;
         document.getElementById('entryVendor').value = p.vendor;
         document.getElementById('entryContact').value = p.contact !== 'N/A' ? p.contact : '';
@@ -813,7 +835,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // FORMATTED EXCEL WORKBOOK GENERATOR
     function generateFormattedExcel(dataset, includeCategorySheet, includeKpiSheet) {
         if (typeof XLSX === 'undefined') {
             alert('Excel export library is loading. Please try again.');
@@ -827,11 +848,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const wb = XLSX.utils.book_new();
 
-        // 1. SHEET 1: Master Permit Tracker (Formatted Table)
         const formattedPermits = dataset.map((p, idx) => ({
             'S.No': idx + 1,
             'Permit Number': p.permit_no,
-            'Date': p.date || 'N/A',
+            'Date (Long Format)': formatLongDate(p.date),
             'Category': p.type,
             'Site Location': p.location,
             'Company / Agency': p.company,
@@ -847,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
         wsPermits['!cols'] = [
             { wch: 6 },   // S.No
             { wch: 15 },  // Permit Number
-            { wch: 13 },  // Date
+            { wch: 20 },  // Date (Long Format)
             { wch: 16 },  // Category
             { wch: 28 },  // Site Location
             { wch: 26 },  // Company / Agency
@@ -860,7 +880,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         XLSX.utils.book_append_sheet(wb, wsPermits, 'Master Permits Tracker');
 
-        // 2. SHEET 2: 5 Categories Threshold & Compliance Summary
         if (includeCategorySheet) {
             const categories = [
                 { name: 'General Maintenance', typeKey: 'General' },
@@ -898,18 +917,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const wsCategory = XLSX.utils.json_to_sheet(categoryData);
             wsCategory['!cols'] = [
-                { wch: 32 }, // Category Name
-                { wch: 20 }, // Total Permits
-                { wch: 18 }, // Active
-                { wch: 18 }, // Completed
-                { wch: 20 }, // Min Target
-                { wch: 22 }, // Compliance Status
-                { wch: 28 }  // Top Contractor
+                { wch: 32 },
+                { wch: 20 },
+                { wch: 18 },
+                { wch: 18 },
+                { wch: 20 },
+                { wch: 22 },
+                { wch: 28 }
             ];
             XLSX.utils.book_append_sheet(wb, wsCategory, '5 Category Threshold Monitor');
         }
 
-        // 3. SHEET 3: Executive KPI Summary
         if (includeKpiSheet) {
             const kpiSummary = [
                 { 'Executive Indicator': 'Total Work Permits Recorded', 'Value / Count': permits.length, 'Percentage Share': '100%' },
@@ -927,9 +945,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const wsKpi = XLSX.utils.json_to_sheet(kpiSummary);
             wsKpi['!cols'] = [
-                { wch: 38 }, // Executive Indicator
-                { wch: 25 }, // Value
-                { wch: 18 }  // Percentage Share
+                { wch: 38 },
+                { wch: 25 },
+                { wch: 18 }
             ];
             XLSX.utils.book_append_sheet(wb, wsKpi, 'Executive KPI Summary');
         }
@@ -1082,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const headers = ['Permit No', 'Date', 'Category/Type', 'Site Location', 'Company', 'Vendor Name', 'Contact', 'Description', 'Status', 'Log Sheet'];
         const rows = filteredPermits.map(p => [
             `"${p.permit_no}"`,
-            `"${p.date}"`,
+            `"${formatLongDate(p.date)}"`,
             `"${p.type}"`,
             `"${p.location}"`,
             `"${p.company}"`,
@@ -1108,9 +1126,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!p) return;
 
         document.getElementById('detailPermitNo').textContent = 'Permit #' + p.permit_no;
-        document.getElementById('detailDate').textContent = p.date || 'N/A';
+        document.getElementById('detailDate').textContent = formatLongDate(p.date);
         document.getElementById('detailCategoryBadge').textContent = p.type;
-        document.getElementById('detailLocation').textContent = p.location; // Free text location
+        document.getElementById('detailLocation').textContent = p.location;
         document.getElementById('detailCompany').textContent = p.company;
         document.getElementById('detailVendor').textContent = p.vendor;
         document.getElementById('detailContact').textContent = p.contact || 'N/A';
