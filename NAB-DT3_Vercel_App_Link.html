@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAB-DT3 Work Permit System - Vercel Live Link</title>
+    <!-- Auto-redirect to Live Vercel App -->
+    <meta http-equiv="refresh" content="0; url=https://nab-dt3-work-permit-system.vercel.app">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #060B19;
+            color: #F8FAFC;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        .card {
+            background: rgba(11, 23, 54, 0.9);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            padding: 36px 28px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+        .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #2563EB, #06B6D4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #fff;
+            box-shadow: 0 0 24px rgba(59, 130, 246, 0.4);
+        }
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            color: #fff;
+        }
+        p {
+            font-size: 14px;
+            color: #94A3B8;
+            line-height: 1.5;
+        }
+        .btn-launch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563EB, #06B6D4);
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+            transition: transform 0.2s ease;
+        }
+        .btn-launch:hover {
+            transform: translateY(-2px);
+        }
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: #38BDF8;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="icon">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2>NAB-DT3 Work Permit System</h2>
+        <p>Redirecting to your live Vercel Cloud Application...</p>
+        <div class="spinner"></div>
+        <a href="https://nab-dt3-work-permit-system.vercel.app" class="btn-launch" id="targetLink">
+            <i class="fa-solid fa-rocket"></i> Open Live Vercel App
+        </a>
+    </div>
+
+    <script>
+        // Instant JavaScript Redirect
+        const vercelUrl = "https://nab-dt3-work-permit-system.vercel.app";
+        window.location.href = vercelUrl;
+    </script>
+</body>
+</html>
