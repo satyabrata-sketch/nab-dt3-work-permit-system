@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "name": "nab-dt3-work-permit-system",
+  "cleanUrls": true,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
