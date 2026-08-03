@@ -1,5 +1,5 @@
 /* ==========================================================================
-   NAB-DT3 WORK PERMIT SYSTEM - LOGIC (BLUE & GREEN THEME, LONG DATE FORMAT)
+   NAB-DT3 WORK PERMIT SYSTEM - LOGIC (TOTAL BLUE THEME & SEQUENTIAL SR NO)
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // LONG DATE FORMAT HELPER (e.g. July 08, 2026)
     function formatLongDate(dateStr) {
         if (!dateStr || dateStr === 'N/A') return 'N/A';
-        if (dateStr.includes(',') && dateStr.length > 8) return dateStr; // Already long format
+        if (dateStr.includes(',') && dateStr.length > 8) return dateStr;
         
         const clean = dateStr.split(' ')[0];
         const parsed = new Date(clean);
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'Electrical Safety Work', typeKey: 'Electrical', icon: 'fa-bolt', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
             { name: 'HOT Work (Welding/Spark)', typeKey: 'HOT', icon: 'fa-fire-flame-curved', color: '#F43F5E', bg: 'rgba(244, 63, 94, 0.15)' },
             { name: 'Height Work (Ceiling/Roof)', typeKey: 'Height', icon: 'fa-person-falling-burst', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.15)' },
-            { name: 'Confined Space Work', typeKey: 'Confined Space', icon: 'fa-boxes-packing', color: '#10B981', bg: 'rgba(16, 185, 129, 0.15)' }
+            { name: 'Confined Space Work', typeKey: 'Confined Space', icon: 'fa-boxes-packing', color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' }
         ];
 
         categories.forEach(cat => {
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // RENDER SLIDE 1 PERMITS TRACKER (LONG DATE FORMAT)
+    // RENDER SLIDE 1 PERMITS TRACKER (SEQUENTIAL SR NO: 1, 2, 3...)
     // ----------------------------------------------------
     function renderPermits() {
         const tbody = document.getElementById('permitsTableBody');
@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.innerHTML = '';
 
         if (filteredPermits.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding: 40px; color: var(--text-muted);">
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center" style="padding: 40px; color: var(--text-muted);">
                 <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 10px; display: block;"></i>
                 No work permits found matching current category or filter criteria.
             </td></tr>`;
@@ -420,9 +420,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const pageRecords = filteredPermits.slice(startIdx, endIdx);
 
-        pageRecords.forEach(p => {
+        pageRecords.forEach((p, idx) => {
             const tr = document.createElement('tr');
             
+            // SEQUENTIAL SR NO (1, 2, 3, 4...)
+            const sequentialSrNo = startIdx + idx + 1;
+
             let badgeClass = 'badge-general';
             if (p.type === 'Electrical') badgeClass = 'badge-electrical';
             if (p.type === 'HOT') badgeClass = 'badge-hot';
@@ -436,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const longDateStr = formatLongDate(p.date);
 
             tr.innerHTML = `
+                <td><span class="sr-no-cell">${sequentialSrNo}</span></td>
                 <td><strong>#${p.permit_no}</strong></td>
                 <td><i class="fa-regular fa-calendar-check" style="color: var(--primary);"></i> ${longDateStr}</td>
                 <td><span class="type-badge ${badgeClass}">${p.type}</span></td>
@@ -460,6 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'permit-card';
             card.innerHTML = `
                 <div class="permit-card-header">
+                    <span class="sr-no-cell">Sr No #${sequentialSrNo}</span>
                     <span class="type-badge ${badgeClass}">${p.type}</span>
                     <span class="status-badge ${statusClass}">${p.status}</span>
                 </div>
@@ -523,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // CHARTS (BLUE & GREEN THEME VISUALIZATIONS)
+    // CHARTS (BLUE THEME VISUALIZATIONS)
     // ----------------------------------------------------
     function initCharts() {
         const ctxCat = document.getElementById('categoryChart').getContext('2d');
@@ -533,9 +538,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 labels: ['General', 'Electrical', 'HOT Work', 'Height Work', 'Confined Space'],
                 datasets: [{
                     data: [0, 0, 0, 0, 0],
-                    backgroundColor: ['#3B82F6', '#F59E0B', '#F43F5E', '#8B5CF6', '#10B981'],
+                    backgroundColor: ['#3B82F6', '#F59E0B', '#F43F5E', '#8B5CF6', '#06B6D4'],
                     borderWidth: 2,
-                    borderColor: '#0B132B'
+                    borderColor: '#060B19'
                 }]
             },
             options: {
@@ -581,8 +586,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     axis: 'y',
                     label: 'Permits',
                     data: [],
-                    backgroundColor: 'rgba(16, 185, 129, 0.75)',
-                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(56, 189, 248, 0.75)',
+                    borderColor: '#38BDF8',
                     borderWidth: 1,
                     borderRadius: 4
                 }]
@@ -701,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = document.getElementById('entryPermitId').value;
             const permit_no = document.getElementById('entryPermitNo').value.trim();
             const rawDate = document.getElementById('entryDate').value;
-            const date = formatLongDate(rawDate); // Long Date Format
+            const date = formatLongDate(rawDate);
             const type = document.getElementById('entryType').value;
             const location = document.getElementById('entryLocation').value.trim();
             const company = document.getElementById('entryCompany').value.trim();
@@ -763,7 +768,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('entryPermitId').value = p.id;
         document.getElementById('entryPermitNo').value = p.permit_no;
         
-        // Parse date for HTML date input
         try {
             const parsed = new Date(p.date);
             if (!isNaN(parsed.getTime())) {
@@ -849,7 +853,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wb = XLSX.utils.book_new();
 
         const formattedPermits = dataset.map((p, idx) => ({
-            'S.No': idx + 1,
+            'Sr No': idx + 1, // Sequential 1, 2, 3, 4...
             'Permit Number': p.permit_no,
             'Date (Long Format)': formatLongDate(p.date),
             'Category': p.type,
@@ -865,7 +869,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wsPermits = XLSX.utils.json_to_sheet(formattedPermits);
 
         wsPermits['!cols'] = [
-            { wch: 6 },   // S.No
+            { wch: 8 },   // Sr No
             { wch: 15 },  // Permit Number
             { wch: 20 },  // Date (Long Format)
             { wch: 16 },  // Category
@@ -1097,8 +1101,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const headers = ['Permit No', 'Date', 'Category/Type', 'Site Location', 'Company', 'Vendor Name', 'Contact', 'Description', 'Status', 'Log Sheet'];
-        const rows = filteredPermits.map(p => [
+        const headers = ['Sr No', 'Permit No', 'Date', 'Category/Type', 'Site Location', 'Company', 'Vendor Name', 'Contact', 'Description', 'Status', 'Log Sheet'];
+        const rows = filteredPermits.map((p, idx) => [
+            `"${idx + 1}"`,
             `"${p.permit_no}"`,
             `"${formatLongDate(p.date)}"`,
             `"${p.type}"`,

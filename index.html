@@ -44,7 +44,7 @@
             </div>
 
             <div class="header-right-tools">
-                <button class="btn btn-emerald btn-sm shadow-glow-emerald" id="btnHeaderExportExcel">
+                <button class="btn btn-primary btn-sm shadow-glow-blue" id="btnHeaderExportExcel">
                     <i class="fa-solid fa-file-excel"></i> Export Excel (.xlsx)
                 </button>
                 <div class="status-pill active-pill">
@@ -164,12 +164,12 @@
                             <i class="fa-solid fa-table"></i>
                             <div>
                                 <h2>NAB-DT3 Permit Records Tracker</h2>
-                                <p>Search, filter, view details, edit, or delete stored permits (All 424 Excel records loaded)</p>
+                                <p>Search, filter, view details, edit, or delete stored permits (Sequential Sr No Order)</p>
                             </div>
                         </div>
 
                         <div class="header-actions">
-                            <button class="btn btn-emerald shadow-glow-emerald" id="btnExportExcelSlide1">
+                            <button class="btn btn-primary shadow-glow-blue" id="btnExportExcelSlide1">
                                 <i class="fa-solid fa-file-excel"></i> Export Formatted Excel (.xlsx)
                             </button>
                             <button class="btn btn-secondary" id="btnExportCSV"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
@@ -181,7 +181,7 @@
                     <div class="explorer-toolbar">
                         <div class="search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="searchInput" placeholder="Search Permit #, Company, Vendor, Location, Description..." autocomplete="off">
+                            <input type="text" id="searchInput" placeholder="Search Permit #, Company, Vendor, Location, Date, Description..." autocomplete="off">
                             <button class="clear-search" id="btnClearSearch" style="display: none;">&times;</button>
                         </div>
 
@@ -239,13 +239,14 @@
                         </div>
                     </div>
 
-                    <!-- PERMITS TABLE VIEW -->
+                    <!-- PERMITS TABLE VIEW WITH SEQUENTIAL SR NO COLUMN -->
                     <div class="table-responsive-container" id="tableViewContainer">
                         <table class="permits-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 60px;">Sr No</th>
                                     <th data-sort="permit_no">Permit No <i class="fa-solid fa-sort"></i></th>
-                                    <th data-sort="date">Date <i class="fa-solid fa-sort"></i></th>
+                                    <th data-sort="date">Date (Long Format) <i class="fa-solid fa-sort"></i></th>
                                     <th data-sort="type">Category <i class="fa-solid fa-sort"></i></th>
                                     <th data-sort="location">Location / Zone <i class="fa-solid fa-sort"></i></th>
                                     <th data-sort="company">Company / Vendor <i class="fa-solid fa-sort"></i></th>
@@ -299,7 +300,7 @@
                         <p>Real-time analytics, category threshold metrics, and site volume indicators</p>
                     </div>
                     <div class="dashboard-actions">
-                        <button class="btn btn-emerald shadow-glow-emerald" id="btnExportExcelDashboard">
+                        <button class="btn btn-primary shadow-glow-blue" id="btnExportExcelDashboard">
                             <i class="fa-solid fa-file-excel"></i> Export Dashboard Report (.xlsx)
                         </button>
                     </div>
@@ -358,13 +359,13 @@
                     </div>
 
                     <div class="stat-card" id="statCardConfined">
-                        <div class="stat-icon icon-emerald"><i class="fa-solid fa-boxes-packing"></i></div>
+                        <div class="stat-icon icon-sky"><i class="fa-solid fa-boxes-packing"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Confined Space</span>
                             <h2 class="stat-value" id="statConfinedPermits">0</h2>
                             <span class="stat-desc" id="statConfinedPct">0% of Total</span>
                         </div>
-                        <div class="stat-bar"><div class="bar-fill emerald-fill" id="barConfined" style="width: 0%;"></div></div>
+                        <div class="stat-bar"><div class="bar-fill sky-fill" id="barConfined" style="width: 0%;"></div></div>
                     </div>
                 </div>
 
@@ -463,7 +464,7 @@
     <div class="modal-overlay" id="exportModalOverlay">
         <div class="modal-card export-modal-card">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-file-excel text-emerald"></i> Export Formatted Excel Report Hub</h3>
+                <h3><i class="fa-solid fa-file-excel text-blue"></i> Export Formatted Excel Report Hub</h3>
                 <button class="modal-close" id="btnCloseExportModal">&times;</button>
             </div>
             
@@ -472,7 +473,7 @@
                     <div class="banner-icon"><i class="fa-solid fa-file-invoice"></i></div>
                     <div class="banner-text">
                         <h4>NAB-DT3 Work Permit Master Report (.xlsx)</h4>
-                        <p>Generates a formatted multi-sheet Excel workbook with clean columns, auto-width formatting, 5-category threshold metrics, and executive summaries.</p>
+                        <p>Generates a formatted multi-sheet Excel workbook with clean columns, sequential Sr No, auto-width formatting, and executive summaries.</p>
                     </div>
                 </div>
 
@@ -488,7 +489,7 @@
                     <div class="export-opt-box">
                         <label class="opt-title"><i class="fa-solid fa-layer-group"></i> Worksheets to Include:</label>
                         <div class="opt-check-group">
-                            <label><input type="checkbox" id="chkSheetMaster" checked disabled> Sheet 1: Master Permits List (Formatted Data)</label>
+                            <label><input type="checkbox" id="chkSheetMaster" checked disabled> Sheet 1: Master Permits List (Sequential Sr No)</label>
                             <label><input type="checkbox" id="chkSheetCategory" checked> Sheet 2: 5 Categories Threshold Monitor & Compliance</label>
                             <label><input type="checkbox" id="chkSheetKPI" checked> Sheet 3: Executive KPI Metrics Breakdown</label>
                         </div>
@@ -498,7 +499,7 @@
 
             <div class="modal-footer">
                 <button class="btn btn-ghost" id="btnCancelExport">Cancel</button>
-                <button class="btn btn-emerald shadow-glow-emerald" id="btnConfirmExportExcel">
+                <button class="btn btn-primary shadow-glow-blue" id="btnConfirmExportExcel">
                     <i class="fa-solid fa-download"></i> Download Formatted Excel (.xlsx)
                 </button>
             </div>
@@ -561,9 +562,9 @@
                 <div class="pass-checklist">
                     <span class="pass-label">Safety Compliance Checklist:</span>
                     <ul>
-                        <li><i class="fa-solid fa-check-double text-emerald"></i> PPE & Safety Equipment Inspected</li>
-                        <li><i class="fa-solid fa-check-double text-emerald"></i> Isolations & Risk Assessment Cleared</li>
-                        <li><i class="fa-solid fa-check-double text-emerald"></i> Facility Operations Authorization Verified</li>
+                        <li><i class="fa-solid fa-check-double text-blue"></i> PPE & Safety Equipment Inspected</li>
+                        <li><i class="fa-solid fa-check-double text-blue"></i> Isolations & Risk Assessment Cleared</li>
+                        <li><i class="fa-solid fa-check-double text-blue"></i> Facility Operations Authorization Verified</li>
                     </ul>
                 </div>
             </div>
